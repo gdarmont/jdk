@@ -312,6 +312,46 @@ public abstract class UnixFileSystemProvider
     }
 
     @Override
+    public boolean checkAccessSingleMode(Path obj, AccessMode accessMode) throws IOException {
+        UnixPath file = UnixPath.toUnixPath(obj);
+        boolean e = false;
+        boolean r = false;
+        boolean w = false;
+        boolean x = false;
+
+        if (accessMode == null) {
+            e = true;
+        } else {
+            switch (accessMode) {
+                case READ -> r = true;
+                case WRITE -> w = true;
+                case EXECUTE -> x = true;
+            }
+        }
+
+        int mode = 0;
+        if (e || r) {
+            file.checkRead();
+            mode |= (r) ? R_OK : F_OK;
+        }
+        if (w) {
+            file.checkWrite();
+            mode |= W_OK;
+        }
+        if (x) {
+            @SuppressWarnings("removal")
+            SecurityManager sm = System.getSecurityManager();
+            if (sm != null) {
+                // not cached
+                sm.checkExec(file.getPathForPermissionCheck());
+            }
+            mode |= X_OK;
+        }
+
+        return accessSingleMode(file, mode);
+    }
+
+    @Override
     public void checkAccess(Path obj, AccessMode... modes) throws IOException {
         UnixPath file = UnixPath.toUnixPath(obj);
         boolean e = false;

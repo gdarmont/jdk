@@ -2569,6 +2569,9 @@ public final class Files {
      */
     private static boolean isAccessible(Path path, AccessMode... modes) {
         try {
+            if (modes.length == 1) {
+                return provider(path).checkAccessSingleMode(path, modes[0]);
+            }
             provider(path).checkAccess(path, modes);
             return true;
         } catch (IOException x) {

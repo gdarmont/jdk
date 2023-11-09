@@ -53,10 +53,10 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.net.URI;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.io.InputStream;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.util.ArrayList;
@@ -1050,6 +1050,48 @@ public abstract class FileSystemProvider {
      */
     public abstract void checkAccess(Path path, AccessMode... modes)
         throws IOException;
+
+    /**
+     * The very same as {@link #checkAccess(Path, AccessMode[])}, but returning
+     * a boolean since it only takes one arg.
+     *
+     * @see  #checkAccess(Path, AccessMode[])
+     * @param   path
+     *          the path to the file to check
+     * @param   mode
+     *          The access modes to check; may be null
+     *
+     * @throws  UnsupportedOperationException
+     *          an implementation is required to support checking for
+     *          {@code READ}, {@code WRITE}, and {@code EXECUTE} access. This
+     *          exception is specified to allow for the {@code Access} enum to
+     *          be extended in future releases.
+     * @throws  NoSuchFileException
+     *          if a file does not exist <i>(optional specific exception)</i>
+     * @throws  AccessDeniedException
+     *          the requested access would be denied or the access cannot be
+     *          determined because the Java virtual machine has insufficient
+     *          privileges or other reasons. <i>(optional specific exception)</i>
+     * @throws  IOException
+     *          if an I/O error occurs
+     * @throws  SecurityException
+     *          In the case of the default provider, and a security manager is
+     *          installed, the {@link SecurityManager#checkRead(String) checkRead}
+     *          is invoked when checking read access to the file or only the
+     *          existence of the file, the {@link SecurityManager#checkWrite(String)
+     *          checkWrite} is invoked when checking write access to the file,
+     *          and {@link SecurityManager#checkExec(String) checkExec} is invoked
+     *          when checking execute access.
+     * @return true if the file has the wanted mode
+     */
+    public boolean checkAccessSingleMode(Path path, AccessMode mode) throws IOException {
+        try {
+            checkAccess(path, new AccessMode[]{ mode });
+            return true;
+        } catch (IOException x) {
+            return false;
+        }
+    }
 
     /**
      * Returns a file attribute view of a given type. This method works in

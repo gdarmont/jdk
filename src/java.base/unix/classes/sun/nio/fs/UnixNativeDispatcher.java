@@ -609,6 +609,18 @@ class UnixNativeDispatcher {
     }
     private static native void access0(long pathAddress, int amode) throws UnixException;
 
+    static boolean accessSingleMode(UnixPath path, int amode) {
+        try (NativeBuffer buffer = copyToNativeBuffer(path)) {
+            long comp = Blocker.begin();
+            try {
+                return accessSingleMode0(buffer.address(), amode);
+            } finally {
+                Blocker.end(comp);
+            }
+        }
+    }
+    private static native boolean accessSingleMode0(long pathAddress, int amode);
+
     /**
      * access(constant char* path, F_OK)
      *

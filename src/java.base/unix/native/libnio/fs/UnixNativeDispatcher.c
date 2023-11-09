@@ -974,6 +974,17 @@ Java_sun_nio_fs_UnixNativeDispatcher_realpath0(JNIEnv* env, jclass this,
     return result;
 }
 
+JNIEXPORT jboolean JNICALL
+Java_sun_nio_fs_UnixNativeDispatcher_accessSingleMode0(JNIEnv* env, jclass this,
+    jlong pathAddress, jint amode)
+{
+    int err;
+    const char* path = (const char*)jlong_to_ptr(pathAddress);
+
+    RESTARTABLE(access(path, (int)amode), err);
+    return (err == 0) ? JNI_TRUE : JNI_FALSE;
+}
+
 JNIEXPORT void JNICALL
 Java_sun_nio_fs_UnixNativeDispatcher_access0(JNIEnv* env, jclass this,
     jlong pathAddress, jint amode)
